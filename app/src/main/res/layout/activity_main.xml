@@ -106,6 +106,7 @@
                 android:text="guardar"
                 android:layout_marginVertical="14dp"
                 android:id="@+id/SaveButton"
+                android:onClick="onClickAgregar"
                 android:backgroundTint="@color/GPT_primary"
                 />
             <Button
