@@ -15,7 +15,7 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
-
+    DataHelper dh = new DataHelper(this, "IRSptealto.db", null, 1);
     EditText servNumber, servAddress, servReference, servOBAC;
     Spinner comboBoxService;
     String[] servicios = new String[]{"Básico", "Fuego", "HazMat", "Medico"};
@@ -44,7 +44,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onClickAgregar(View view) {
-        DataHelper dh = new DataHelper(this, "IRSptealto.db", null, 1);
         SQLiteDatabase db = dh.getWritableDatabase();
         ContentValues reg = new ContentValues();
         reg.put("id", servNumber.getText().toString());
@@ -58,20 +57,56 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Error en registrar el servicio", Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(this, "Servicio registrado con éxito", Toast.LENGTH_SHORT).show();
+            //Limpiar Datos
+            LimpiarCampos();
+        }
+        CargarLista();
+    }
+
+    public void onClickModificar(View view){
+        SQLiteDatabase db = dh.getWritableDatabase();
+        ContentValues reg = new ContentValues();
+        reg.put("id", servNumber.getText().toString());
+        reg.put("address", servAddress.getText().toString());
+        reg.put("reference", servReference.getText().toString());
+        reg.put("obac", servOBAC.getText().toString());
+        reg.put("type", comboBoxService.getSelectedItem().toString());
+        long resp = db.update("servicio", reg, "id=?", new String[]{servNumber.getText().toString()});
+        db.close();
+        if (resp == -1) {
+            Toast.makeText(this, "Error en modificar el servicio", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "Servicio modificado con éxito", Toast.LENGTH_SHORT).show();
+            //Limpiar Datos
+            LimpiarCampos();
+        }
+        CargarLista();
+    }
+
+    public void onClickEliminar(View view){
+        SQLiteDatabase db = dh.getWritableDatabase();
+        String corr = servNumber.getText().toString();
+        long resp = db.delete("servicio", "id="+corr, null);
+        db.close();
+        if (resp == -1) {
+            Toast.makeText(this, "Error en eliminar el servicio", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "Servicio eliminado con éxito", Toast.LENGTH_SHORT).show();
+            //Limpiar Datos
+            LimpiarCampos();
         }
         CargarLista();
 
     }
 
     public void CargarLista(){
-        DataHelper dh = new DataHelper(this, "IRSptealto.db", null, 1);
         SQLiteDatabase db = dh.getWritableDatabase();
         Cursor c = db.rawQuery("SELECT id, address, reference, type FROM servicio", null);
         String[] arr = new String[c.getCount()];
         if(c.moveToFirst()){
             int i = 0;
             do{
-                String linea = "" + c.getInt(0) + " | " + c.getString(1) + " esq. " + c.getString(2) + " | " + c.getString(
+                String linea = "Corr: " + c.getInt(0) + "\nDirección: " + c.getString(1) + " esq. " + c.getString(2) + "\nTipo: " + c.getString(
                         3
                 );
                 arr[i] = linea;
@@ -83,5 +118,12 @@ public class MainActivity extends AppCompatActivity {
         );
         servicesList.setAdapter(adapter);
         c.close();
+    }
+
+    public void LimpiarCampos(){
+        servNumber.setText("");
+        servAddress.setText("");
+        servReference.setText("");
+        servOBAC.setText("");
     }
 }
