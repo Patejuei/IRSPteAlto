@@ -3,6 +3,7 @@ package com.example.potoapp;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.ContentValues;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.View;
@@ -13,6 +14,7 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
+
 
     EditText servNumber, servAddress, servReference, servOBAC;
     Spinner comboBoxService;
@@ -36,6 +38,9 @@ public class MainActivity extends AppCompatActivity {
         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, servicios);
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         comboBoxService.setAdapter(spinnerAdapter);
+
+        // Cargar Lista
+        CargarLista();
     }
 
     public void onClickAgregar(View view) {
@@ -54,6 +59,29 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Toast.makeText(this, "Servicio registrado con éxito", Toast.LENGTH_SHORT).show();
         }
+        CargarLista();
 
+    }
+
+    public void CargarLista(){
+        DataHelper dh = new DataHelper(this, "IRSptealto.db", null, 1);
+        SQLiteDatabase db = dh.getWritableDatabase();
+        Cursor c = db.rawQuery("SELECT id, address, reference, type FROM servicio", null);
+        String[] arr = new String[c.getCount()];
+        if(c.moveToFirst()){
+            int i = 0;
+            do{
+                String linea = "" + c.getInt(0) + " | " + c.getString(1) + " esq. " + c.getString(2) + " | " + c.getString(
+                        3
+                );
+                arr[i] = linea;
+                i++;
+            }while(c.moveToNext());
+        }
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(
+                this, android.R.layout.simple_expandable_list_item_1, arr
+        );
+        servicesList.setAdapter(adapter);
+        c.close();
     }
 }
